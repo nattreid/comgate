@@ -1,0 +1,31 @@
+{
+  "name": "nattreid/comgate",
+  "description": "Comgate for Nette Framework",
+  "type": "library",
+  "license": [
+	"MIT"
+  ],
+  "authors": [
+	{
+	  "name": "Attreid",
+	  "email": "attreid@gmail.com"
+	}
+  ],
+  "require": {
+	"php": ">= 7.1",
+	"ext-json": "*",
+	"ext-curl": "*",
+	"nette/application": "~2.4",
+	"nette/di": "~2.4"
+  },
+  "require-dev": {
+	"nette/tester": "~1.7",
+	"tracy/tracy": "~2.4",
+	"nattreid/web-manager": "~1.0"
+  },
+  "autoload": {
+	"classmap": [
+	  "src/"
+	]
+  }
+}
