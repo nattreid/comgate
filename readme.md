@@ -14,12 +14,10 @@ comgate:
 
 ### Použití
 ```php
-/** @var \NAttreid\Comgate\IComgateClientFactory @inject */
-public $comgateFactory;
+/** @var \NAttreid\Comgate\ComgateClient @inject */
+public $comgate;
 
 private function process() {
-    $comgate = $this->comgateFactory->create();
-    
-    
+    $comgate = $this->comgate;
 }
 ```

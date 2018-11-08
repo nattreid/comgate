@@ -60,8 +60,7 @@ abstract class AbstractComgateExtension extends CompilerExtension
 			]);
 
 		$builder->addDefinition($this->prefix('client'))
-			->setImplement(IComgateClientFactory::class)
-			->setFactory(ComgateClient::class);
+			->setType(ComgateClient::class);
 	}
 
 	protected function prepareConfig(array $config)

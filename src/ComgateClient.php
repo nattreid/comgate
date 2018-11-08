@@ -174,8 +174,3 @@ class ComgateClient
 		}
 	}
 }
-
-interface IComgateClientFactory
-{
-	public function create(): ComgateClient;
-}
