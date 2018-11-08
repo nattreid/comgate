@@ -10,6 +10,7 @@ use Nette\SmartObject;
  * Class ComgateConfig
  *
  * @property string|null $password
+ * @property string|null $merchant
  *
  * @author Attreid <attreid@gmail.com>
  */
@@ -20,6 +21,9 @@ class ComgateConfig
 	/** @var string|null */
 	private $password;
 
+	/** @var string|null */
+	private $merchant;
+
 	protected function getPassword(): ?string
 	{
 		return $this->password;
@@ -28,5 +32,15 @@ class ComgateConfig
 	protected function setPassword(?string $password): void
 	{
 		$this->password = $password;
+	}
+
+	protected function getMerchant(): ?string
+	{
+		return $this->merchant;
+	}
+
+	protected function setMerchant(?string $merchant): void
+	{
+		$this->merchant = $merchant;
 	}
 }

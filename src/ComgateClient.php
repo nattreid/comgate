@@ -6,6 +6,9 @@ namespace NAttreid\Comgate;
 
 use AgmoPaymentsSimpleDatabase;
 use AgmoPaymentsSimpleProtocol;
+use NAttreid\Comgate\Helpers\ComgateException;
+use NAttreid\Comgate\Helpers\Response;
+use NAttreid\Comgate\Hooks\ComgateConfig;
 use Nette\Application\Responses\RedirectResponse;
 use Nette\InvalidStateException;
 
@@ -40,10 +43,10 @@ class ComgateClient
 	/** @var bool */
 	private $preAuth = false;
 
-	public function __construct(AgmoPaymentsSimpleDatabase $paymentsDatabase, AgmoPaymentsSimpleProtocol $paymentsProtocol)
+	public function __construct(ComgateConfig $config, string $temp, string $paymentUrl, bool $test)
 	{
-		$this->paymentsDatabase = $paymentsDatabase;
-		$this->paymentsProtocol = $paymentsProtocol;
+		$this->paymentsDatabase = new AgmoPaymentsSimpleDatabase($temp, $config->merchant, $test);
+		$this->paymentsProtocol = new AgmoPaymentsSimpleProtocol($paymentUrl, $config->merchant, $test, $config->password);
 	}
 
 	public function setCountry(string $country): void
@@ -79,21 +82,21 @@ class ComgateClient
 	private function checkState(): void
 	{
 		if ($this->country === null) {
-			throw new InvalidStateException('Country is not set.');
+			throw new ComgateException('Country is not set.');
 		}
 		if ($this->currency === null) {
-			throw new InvalidStateException('Currency is not set.');
+			throw new ComgateException('Currency is not set.');
 		}
 		if ($this->price === null) {
-			throw new InvalidStateException('Price is not set.');
+			throw new ComgateException('Price is not set.');
 		}
 	}
 
 	/**
-	 * @return RedirectResponse
+	 * @return Response
 	 * @throws ComgateException
 	 */
-	public function createTransaction(): RedirectResponse
+	public function createTransaction(): Response
 	{
 		$this->checkState();
 
@@ -141,8 +144,7 @@ class ComgateClient
 			throw new ComgateException($ex->getMessage());
 		}
 
-		// redirect to agmo payments system
-		return new RedirectResponse($this->paymentsProtocol->getRedirectUrl());
+		return new Response($transId, $this->paymentsProtocol->getRedirectUrl());
 	}
 
 	public function checkTransactionStatus()

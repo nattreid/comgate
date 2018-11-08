@@ -35,32 +35,18 @@ abstract class AbstractComgateExtension extends CompilerExtension
 		if ($config['merchant'] === null) {
 			throw new InvalidStateException("Comgate: 'merchant' does not set in config.neon");
 		}
-		if ($config['password'] === null) {
-			throw new InvalidStateException("Comgate: 'password' does not set in config.neon");
-		}
 		$config['temp'] = Helpers::expand($config['temp'], $builder->parameters);
 
 		$comgate = $this->prepareConfig($config);
 
-		$builder->addDefinition($this->prefix('database'))
-			->setType(\AgmoPaymentsSimpleDatabase::class)
-			->setArguments([
-				$config['temp'],
-				$config['merchant'],
-				$config['test']
-			]);
-
-		$builder->addDefinition($this->prefix('protocol'))
-			->setType(\AgmoPaymentsSimpleProtocol::class)
-			->setArguments([
-				$config['paymentsUrl'],
-				$config['merchant'],
-				$config['test'],
-				$comgate['password']
-			]);
-
 		$builder->addDefinition($this->prefix('client'))
-			->setType(ComgateClient::class);
+			->setType(ComgateClient::class)
+			->setArguments([
+				$comgate,
+				$config['temp'],
+				$config['paymentsUrl'],
+				$config['test'],
+			]);
 	}
 
 	protected function prepareConfig(array $config)
@@ -68,6 +54,7 @@ abstract class AbstractComgateExtension extends CompilerExtension
 		$builder = $this->getContainerBuilder();
 		return $builder->addDefinition($this->prefix('config'))
 			->setFactory(ComgateConfig::class)
+			->addSetup('$merchant', [$config['merchant']])
 			->addSetup('$password', [$config['password']]);
 	}
 }
