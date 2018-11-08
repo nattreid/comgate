@@ -45,6 +45,9 @@ class ComgateClient
 
 	public function __construct(ComgateConfig $config, string $temp, string $paymentUrl, bool $test)
 	{
+		if (!file_exists($temp)) {
+			mkdir($temp);
+		}
 		$this->paymentsDatabase = new AgmoPaymentsSimpleDatabase($temp, $config->merchant, $test);
 		$this->paymentsProtocol = new AgmoPaymentsSimpleProtocol($paymentUrl, $config->merchant, $test, $config->password);
 	}
