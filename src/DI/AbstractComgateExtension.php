@@ -32,9 +32,6 @@ abstract class AbstractComgateExtension extends CompilerExtension
 		$config = $this->validateConfig($this->defaults, $this->getConfig());
 		$builder = $this->getContainerBuilder();
 
-		if ($config['merchant'] === null) {
-			throw new InvalidStateException("Comgate: 'merchant' does not set in config.neon");
-		}
 		$config['temp'] = Helpers::expand($config['temp'], $builder->parameters);
 
 		$comgate = $this->prepareConfig($config);

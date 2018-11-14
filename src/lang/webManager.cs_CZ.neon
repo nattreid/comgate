@@ -2,5 +2,5 @@ web:
     hooks:
         comgate:
             title: "Comgate"
-            merchant: "Název obchodu"
+            merchant: "Číslo obchodníka"
             password: "Heslo"

@@ -2,5 +2,5 @@ web:
     hooks:
         comgate:
             title: "Comgate"
-            merchant: "Merchant"
+            merchant: "Merchant number"
             password: "Password"

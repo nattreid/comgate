@@ -33,7 +33,7 @@ class ComgateHook extends HookFactory
 		$form = $this->formFactory->create();
 		$form->setAjaxRequest();
 
-		$form->addText('merchant', 'webManager.web.hooks.comgate.merchant')
+		$form->addInteger('merchant', 'webManager.web.hooks.comgate.merchant')
 			->setDefaultValue($this->configurator->comgate->merchant);
 
 		$form->addText('password', 'webManager.web.hooks.comgate.password')

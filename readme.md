@@ -7,7 +7,7 @@ extensions:
 comgate:
     paymentsUrl: https://payments.comgate.cz/v1.0/create
     temp: %tempDir%/comgate/
-    merchant: eshop
+    merchant: 123456
     test: true
     password: password
 ```

@@ -8,6 +8,7 @@ use AgmoPaymentsSimpleDatabase;
 use AgmoPaymentsSimpleProtocol;
 use NAttreid\Comgate\Helpers\ComgateException;
 use NAttreid\Comgate\Helpers\Response;
+use NAttreid\Comgate\Helpers\StatusResponse;
 use NAttreid\Comgate\Hooks\ComgateConfig;
 use Nette\Application\Responses\RedirectResponse;
 use Nette\InvalidStateException;
@@ -99,15 +100,17 @@ class ComgateClient
 	 * @return Response
 	 * @throws ComgateException
 	 */
-	public function createTransaction(): Response
+	public function createTransaction(int $refId = null): TransactionResponse
 	{
 		$this->checkState();
 
-		// prepare payment parameters
-		try {
-			$refId = $this->paymentsDatabase->createNextRefId();
-		} catch (\Exception $ex) {
-			throw new ComgateException($ex->getMessage());
+		if ($refId === null) {
+			// prepare payment parameters
+			try {
+				$refId = $this->paymentsDatabase->createNextRefId();
+			} catch (\Exception $ex) {
+				throw new ComgateException($ex->getMessage());
+			}
 		}
 
 		// create new payment transaction
@@ -147,10 +150,10 @@ class ComgateClient
 			throw new ComgateException($ex->getMessage());
 		}
 
-		return new Response($transId, $this->paymentsProtocol->getRedirectUrl());
+		return new TransactionResponse($transId, $this->paymentsProtocol->getRedirectUrl());
 	}
 
-	public function checkTransactionStatus()
+	public function checkTransactionStatus(): StatusResponse
 	{
 		try {
 			// get transaction status parameters and check them in my configuration
@@ -173,9 +176,9 @@ class ComgateClient
 				$this->paymentsProtocol->getTransactionStatus(),
 				$this->paymentsProtocol->getTransactionFee()
 			);
-			return $this->paymentsProtocol->getTransactionStatusTransId();
+			return new StatusResponse($this->paymentsProtocol->getTransactionId(), $this->paymentsProtocol->getTransactionStatus());
 		} catch (\Exception $ex) {
-			return false;
+			return null;
 		}
 	}
 }

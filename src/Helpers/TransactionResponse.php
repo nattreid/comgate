@@ -5,14 +5,21 @@ declare(strict_types=1);
 namespace NAttreid\Comgate\Helpers;
 
 use Nette\Application\Responses\RedirectResponse;
+use Nette\SmartObject;
 
 /**
- * Class Response
+ * Class TransactionResponse
+ *
+ * @property-read string $transactionId
+ * @property-read string $redirectUrl
+ * @property-read RedirectResponse $response
  *
  * @author Attreid <attreid@gmail.com>
  */
-class Response
+class TransactionResponse
 {
+	use SmartObject;
+
 	/** @var string */
 	private $transactionId;
 
@@ -22,20 +29,20 @@ class Response
 	public function __construct(string $transactionId, string $redirectUrl)
 	{
 		$this->transactionId = $transactionId;
-		$this->paymentUrl = $redirectUrl;
+		$this->redirectUrl = $redirectUrl;
 	}
 
-	public function getTransactionId(): string
+	protected function getTransactionId(): string
 	{
 		return $this->transactionId;
 	}
 
-	public function getRedirectUrl(): string
+	protected function getRedirectUrl(): string
 	{
 		return $this->redirectUrl;
 	}
 
-	public function getResponse(): RedirectResponse
+	protected function getResponse(): RedirectResponse
 	{
 		return new RedirectResponse($this->redirectUrl);
 	}
