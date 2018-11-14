@@ -15,9 +15,33 @@ comgate:
 ### Použití
 ```php
 /** @var \NAttreid\Comgate\ComgateClient @inject */
-public $comgate;
+public $comgateClient;
 
-private function process() {
-    $comgate = $this->comgate;
+private function actionProcess(): void {
+    $comgateClient = $this->comgateClient;
+    
+    $comgateClient->setCountry($this->order->customer->country->code);
+    $comgateClient->setCurrency($this->order->currency->code);
+    $comgateClient->setPrice($this->order->price);
+
+    $response = $comgateClient->createTransaction($this->order->id);
+
+    $this->order->setComgateTransactionId($response->transactionId);
+
+    $this->sendResponse($response->response);
 }
+
+public function actionComgateStatus(): void
+	{
+		$response = $this->comgateClient->checkTransactionStatus();
+		if ($response->isOk()) {
+			if ($response->status === 'PAID') {
+				// paid code
+			}
+		} else {
+			// error code
+		}
+
+		$this->sendResponse($response->reponse);
+	}
 ```

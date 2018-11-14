@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace NAttreid\Comgate\Helpers;
 
-use Nette\Application\Responses\RedirectResponse;
+use Exception;
 use Nette\SmartObject;
 
 /**
  * Class StatusResponse
  *
- * @property-read string $transactionId
- * @property-read string $status
+ * @property-read string|null $transactionId
+ * @property-read string|null $status
+ * @property-read ComgateResponse $reponse
+ * @property-read string|null $error
  *
  * @author Attreid <attreid@gmail.com>
  */
@@ -25,19 +27,39 @@ class StatusResponse
 	/** @var string */
 	private $status;
 
-	public function __construct(string $transactionId, string $status)
+	private $error;
+
+	private $response;
+
+	public function __construct(?string $transactionId, ?string $status, ?Exception $exception)
 	{
 		$this->transactionId = $transactionId;
 		$this->status = $status;
+		if ($exception !== null) {
+			$this->error = $exception->getMessage();
+			$this->response = new ComgateResponse(500, 'code=1&message=ERROR');
+		} else {
+			$this->response = new ComgateResponse(200, 'code=0&message=OK');
+		}
 	}
 
-	protected function getTransactionId(): string
+	public function isOk(): bool
+	{
+		return $this->error === null;
+	}
+
+	protected function getTransactionId(): ?string
 	{
 		return $this->transactionId;
 	}
 
-	protected function getStatus(): string
+	protected function getStatus(): ?string
 	{
 		return $this->status;
+	}
+
+	protected function getResponse(): ComgateResponse
+	{
+		return $this->response;
 	}
 }

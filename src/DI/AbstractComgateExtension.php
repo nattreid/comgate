@@ -9,7 +9,6 @@ use NAttreid\Comgate\Hooks\ComgateConfig;
 use NAttreid\Comgate\IComgateClientFactory;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Helpers;
-use Nette\InvalidStateException;
 
 /**
  * Class AbstractComgateExtension

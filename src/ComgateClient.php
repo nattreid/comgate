@@ -9,9 +9,8 @@ use AgmoPaymentsSimpleProtocol;
 use NAttreid\Comgate\Helpers\ComgateException;
 use NAttreid\Comgate\Helpers\Response;
 use NAttreid\Comgate\Helpers\StatusResponse;
+use NAttreid\Comgate\Helpers\TransactionResponse;
 use NAttreid\Comgate\Hooks\ComgateConfig;
-use Nette\Application\Responses\RedirectResponse;
-use Nette\InvalidStateException;
 
 /**
  * Class ComgateClient
@@ -178,7 +177,7 @@ class ComgateClient
 			);
 			return new StatusResponse($this->paymentsProtocol->getTransactionId(), $this->paymentsProtocol->getTransactionStatus());
 		} catch (\Exception $ex) {
-			return null;
+			throw new ComgateException($ex->getMessage());
 		}
 	}
 }

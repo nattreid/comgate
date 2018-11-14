@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace NAttreid\Comgate\DI;
 
-use NAttreid\Comgate\Hooks\ComgateConfig;
-use NAttreid\Comgate\Hooks\ComgateHook;
 use NAttreid\Cms\Configurator\Configurator;
 use NAttreid\Cms\DI\ExtensionTranslatorTrait;
+use NAttreid\Comgate\Hooks\ComgateConfig;
+use NAttreid\Comgate\Hooks\ComgateHook;
 use NAttreid\WebManager\Services\Hooks\HookService;
 use Nette\DI\Statement;
 
