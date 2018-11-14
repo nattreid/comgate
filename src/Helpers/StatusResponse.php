@@ -12,7 +12,7 @@ use Nette\SmartObject;
  *
  * @property-read string|null $transactionId
  * @property-read string|null $status
- * @property-read ComgateResponse $reponse
+ * @property-read ComgateResponse $response
  * @property-read string|null $error
  *
  * @author Attreid <attreid@gmail.com>
@@ -27,11 +27,13 @@ class StatusResponse
 	/** @var string */
 	private $status;
 
+	/** @var string */
 	private $error;
 
+	/** @var ComgateResponse */
 	private $response;
 
-	public function __construct(?string $transactionId, ?string $status, ?Exception $exception)
+	public function __construct(?string $transactionId, ?string $status, Exception $exception = null)
 	{
 		$this->transactionId = $transactionId;
 		$this->status = $status;
@@ -56,6 +58,11 @@ class StatusResponse
 	protected function getStatus(): ?string
 	{
 		return $this->status;
+	}
+
+	protected function getError(): ?string
+	{
+		return $this->error;
 	}
 
 	protected function getResponse(): ComgateResponse

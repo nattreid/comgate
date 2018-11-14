@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NAttreid\Comgate\Helpers;
 
 use Nette\Application\IResponse;
+use Nette\SmartObject;
 
 /**
  * Class ComgateResponse
@@ -13,7 +14,7 @@ use Nette\Application\IResponse;
  */
 class ComgateResponse implements IResponse
 {
-	use Nette\SmartObject;
+	use SmartObject;
 
 	/** @var int */
 	private $code;
@@ -43,7 +44,6 @@ class ComgateResponse implements IResponse
 	 */
 	public function send(\Nette\Http\IRequest $httpRequest, \Nette\Http\IResponse $httpResponse)
 	{
-		$httpResponse->setContentType($this->contentType, 'utf-8');
 		$httpResponse->setCode($this->code);
 		echo $this->message;
 	}

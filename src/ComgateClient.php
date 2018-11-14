@@ -48,8 +48,8 @@ class ComgateClient
 		if (!file_exists($temp)) {
 			mkdir($temp);
 		}
-		$this->paymentsDatabase = new AgmoPaymentsSimpleDatabase($temp, $config->merchant, $test);
-		$this->paymentsProtocol = new AgmoPaymentsSimpleProtocol($paymentUrl, $config->merchant, $test, $config->password);
+		$this->paymentsDatabase = new AgmoPaymentsSimpleDatabase($temp, (string) $config->merchant, $test);
+		$this->paymentsProtocol = new AgmoPaymentsSimpleProtocol($paymentUrl, (string) $config->merchant, $test, $config->password);
 	}
 
 	public function setCountry(string $country): void
@@ -175,9 +175,9 @@ class ComgateClient
 				$this->paymentsProtocol->getTransactionStatus(),
 				$this->paymentsProtocol->getTransactionFee()
 			);
-			return new StatusResponse($this->paymentsProtocol->getTransactionId(), $this->paymentsProtocol->getTransactionStatus());
+			return new StatusResponse($this->paymentsProtocol->getTransactionStatusTransId(), $this->paymentsProtocol->getTransactionStatus());
 		} catch (\Exception $ex) {
-			throw new ComgateException($ex->getMessage());
+			return new StatusResponse(null, null, $ex);
 		}
 	}
 }
