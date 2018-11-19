@@ -6,7 +6,6 @@ namespace NAttreid\Comgate\DI;
 
 use NAttreid\Comgate\ComgateClient;
 use NAttreid\Comgate\Hooks\ComgateConfig;
-use NAttreid\Comgate\IComgateClientFactory;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Helpers;
 

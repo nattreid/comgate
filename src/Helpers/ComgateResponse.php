@@ -28,19 +28,9 @@ class ComgateResponse implements IResponse
 		$this->message = $message;
 	}
 
-	public function success(): void
-	{
-		$this->response = 'code=0&message=OK';
-	}
-
-	public function error(): void
-	{
-		$this->response = 'code=1&message=ERROR';
-	}
-
 	/**
-	 * Sends response to output.
-	 * @return void
+	 * @param \Nette\Http\IRequest $httpRequest
+	 * @param \Nette\Http\IResponse $httpResponse
 	 */
 	public function send(\Nette\Http\IRequest $httpRequest, \Nette\Http\IResponse $httpResponse)
 	{

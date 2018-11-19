@@ -39,7 +39,7 @@ class StatusResponse
 		$this->status = $status;
 		if ($exception !== null) {
 			$this->error = $exception->getMessage();
-			$this->response = new ComgateResponse(500, 'code=1&message=ERROR');
+			$this->response = new ComgateResponse(200, 'code=1&message=ERROR');
 		} else {
 			$this->response = new ComgateResponse(200, 'code=0&message=OK');
 		}

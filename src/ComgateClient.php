@@ -7,7 +7,6 @@ namespace NAttreid\Comgate;
 use AgmoPaymentsSimpleDatabase;
 use AgmoPaymentsSimpleProtocol;
 use NAttreid\Comgate\Helpers\ComgateException;
-use NAttreid\Comgate\Helpers\Response;
 use NAttreid\Comgate\Helpers\StatusResponse;
 use NAttreid\Comgate\Helpers\TransactionResponse;
 use NAttreid\Comgate\Hooks\ComgateConfig;
@@ -82,6 +81,9 @@ class ComgateClient
 		$this->preAuth = $preAuth;
 	}
 
+	/**
+	 * @throws ComgateException
+	 */
 	private function checkState(): void
 	{
 		if ($this->country === null) {
@@ -96,7 +98,8 @@ class ComgateClient
 	}
 
 	/**
-	 * @return Response
+	 * @param int|null $refId
+	 * @return TransactionResponse
 	 * @throws ComgateException
 	 */
 	public function createTransaction(int $refId = null): TransactionResponse
