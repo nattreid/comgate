@@ -152,7 +152,7 @@ class ComgateClient
 			'secret' => $this->config->password,
 			'preauth' => $this->preAuth ? 'true' : 'false',
 			'initRecurring' => 'false',
-			'eetReport' => false,
+			'eetReport' => '',
 			'eetData' => null
 		]);
 

@@ -36,7 +36,7 @@ abstract class Response
 			$arr = explode('=', $param);
 			$name = urlencode($arr[0]);
 			$value = (count($arr) == 2 ? urldecode($arr[1]) : '');
-			$params[$name] = $value;
+			$result[$name] = $value;
 		}
 		return $result;
 	}
