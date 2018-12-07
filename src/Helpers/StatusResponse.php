@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace NAttreid\Comgate\Helpers;
 
-use Exception;
+use NAttreid\Comgate\Hooks\ComgateConfig;
+use Nette\Http\Request;
 use Nette\SmartObject;
 
 /**
@@ -30,19 +31,30 @@ class StatusResponse
 	/** @var string */
 	private $error;
 
-	/** @var ComgateResponse */
-	private $response;
 
-	public function __construct(?string $transactionId, ?string $status, Exception $exception = null)
+	public function __construct(Request $request, ComgateConfig $config, bool $debug)
 	{
-		$this->transactionId = $transactionId;
-		$this->status = $status;
-		if ($exception !== null) {
-			$this->error = $exception->getMessage();
-			$this->response = new ComgateResponse(200, 'code=1&message=ERROR');
-		} else {
-			$this->response = new ComgateResponse(200, 'code=0&message=OK');
+		if (
+			$request->getPost('merchant') === null ||
+			$request->getPost('test') === null ||
+			$request->getPost('price') === null ||
+			$request->getPost('curr') === null ||
+			$request->getPost('refId') === null ||
+			$request->getPost('transId') === null ||
+			$request->getPost('secret') === null ||
+			$request->getPost('status') === null
+		) {
+			$this->error = 'Missing parameters';
+		} elseif (
+			$request->getPost('merchant') !== $config->merchant ||
+			$request->getPost('test') !== ($debug ? 'true' : 'false') ||
+			$request->getPost('secret') !== $config->password
+		) {
+			$this->error = 'Invalid merchant identification';
 		}
+
+		$this->status = $request->getPost('status');
+		$this->transactionId = $request->getPost('transId');
 	}
 
 	public function isOk(): bool
@@ -67,6 +79,10 @@ class StatusResponse
 
 	protected function getResponse(): ComgateResponse
 	{
-		return $this->response;
+		if ($this->isOk()) {
+			return new ComgateResponse(200, 'code=0&message=OK');
+		} else {
+			return new ComgateResponse(200, 'code=1&message=ERROR');
+		}
 	}
 }

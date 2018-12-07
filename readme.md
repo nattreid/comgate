@@ -5,10 +5,9 @@ extensions:
     comgate: NAttreid\Comgate\DI\ComgateExtension
 
 comgate:
-    paymentsUrl: https://payments.comgate.cz/v1.0/create
-    temp: %tempDir%/comgate/
+    paymentsUrl: https://payments.comgate.cz/v1.0/
     merchant: 123456
-    test: true
+    debug: true
     password: password
 ```
 
@@ -24,7 +23,7 @@ private function actionProcess(): void {
     $comgateClient->setCurrency($this->order->currency->code);
     $comgateClient->setPrice($this->order->price);
 
-    $response = $comgateClient->createTransaction($this->order->id);
+    $response = $comgateClient->transaction($this->order->id);
 
     $this->order->setComgateTransactionId($response->transactionId);
 
@@ -33,7 +32,7 @@ private function actionProcess(): void {
 
 public function actionComgateStatus(): void
 	{
-		$response = $this->comgateClient->checkTransactionStatus();
+		$response = $this->comgateClient->getStatus();
 		if ($response->isOk()) {
 			if ($response->status === 'PAID') {
 				// paid code

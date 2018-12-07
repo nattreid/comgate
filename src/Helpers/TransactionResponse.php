@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace NAttreid\Comgate\Helpers;
 
 use Nette\Application\Responses\RedirectResponse;
-use Nette\SmartObject;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class TransactionResponse
@@ -16,30 +16,41 @@ use Nette\SmartObject;
  *
  * @author Attreid <attreid@gmail.com>
  */
-class TransactionResponse
+class TransactionResponse extends Response
 {
-	use SmartObject;
-
-	/** @var string */
-	private $transactionId;
-
-	/** @var string */
-	private $redirectUrl;
-
-	public function __construct(string $transactionId, string $redirectUrl)
+	/**
+	 * TransactionResponse constructor.
+	 * @param ResponseInterface $response
+	 * @throws ComgateException
+	 */
+	public function __construct(ResponseInterface $response)
 	{
-		$this->transactionId = $transactionId;
-		$this->redirectUrl = $redirectUrl;
+		parent::__construct($response);
+
+		$code = $this->getParam('code');
+		$message = $this->getParam('message');
+
+		if ($code !== '0' || $message !== 'OK') {
+			throw new ComgateException('Transaction creation error ' . $code . ': ' . $message);
+		}
 	}
 
+	/**
+	 * @return string
+	 * @throws ComgateException
+	 */
 	protected function getTransactionId(): string
 	{
-		return $this->transactionId;
+		return $this->getParam('transId');
 	}
 
+	/**
+	 * @return string
+	 * @throws ComgateException
+	 */
 	protected function getRedirectUrl(): string
 	{
-		return $this->redirectUrl;
+		return $this->getParam('redirect');
 	}
 
 	protected function getResponse(): RedirectResponse

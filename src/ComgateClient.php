@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace NAttreid\Comgate;
 
-use AgmoPaymentsSimpleDatabase;
-use AgmoPaymentsSimpleProtocol;
+use GuzzleHttp\Client;
 use NAttreid\Comgate\Helpers\ComgateException;
+use NAttreid\Comgate\Helpers\CredentialsNotSetException;
 use NAttreid\Comgate\Helpers\StatusResponse;
 use NAttreid\Comgate\Helpers\TransactionResponse;
 use NAttreid\Comgate\Hooks\ComgateConfig;
+use Nette\Http\Request;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class ComgateClient
@@ -18,12 +20,6 @@ use NAttreid\Comgate\Hooks\ComgateConfig;
  */
 class ComgateClient
 {
-	/** @var AgmoPaymentsSimpleDatabase */
-	private $paymentsDatabase;
-
-	/** @var AgmoPaymentsSimpleProtocol */
-	private $paymentsProtocol;
-
 	/** @var string */
 	private $country;
 
@@ -42,13 +38,24 @@ class ComgateClient
 	/** @var bool */
 	private $preAuth = false;
 
-	public function __construct(ComgateConfig $config, string $temp, string $paymentUrl, bool $test)
+	/** @var ComgateConfig */
+	private $config;
+
+	/** @var Client */
+	private $client;
+
+	/** @var bool */
+	private $debug;
+
+	/** @var Request */
+	private $request;
+
+	public function __construct(bool $debug, ComgateConfig $config, string $url, Request $request)
 	{
-		if (!file_exists($temp)) {
-			mkdir($temp);
-		}
-		$this->paymentsDatabase = new AgmoPaymentsSimpleDatabase($temp, (string) $config->merchant, $test);
-		$this->paymentsProtocol = new AgmoPaymentsSimpleProtocol($paymentUrl, (string) $config->merchant, $test, $config->password);
+		$this->config = $config;
+		$this->client = new Client(['base_uri' => $url]);
+		$this->debug = $debug;
+		$this->request = $request;
 	}
 
 	public function setCountry(string $country): void
@@ -98,89 +105,62 @@ class ComgateClient
 	}
 
 	/**
-	 * @param int|null $refId
-	 * @return TransactionResponse
-	 * @throws ComgateException
+	 * @param string $url
+	 * @param array $args
+	 * @return ResponseInterface
+	 * @throws CredentialsNotSetException
 	 */
-	public function createTransaction(int $refId = null): TransactionResponse
+	private function request(string $url, array $args = []): ResponseInterface
 	{
-		$this->checkState();
-
-		if ($refId === null) {
-			// prepare payment parameters
-			try {
-				$refId = $this->paymentsDatabase->createNextRefId();
-			} catch (\Exception $ex) {
-				throw new ComgateException($ex->getMessage());
-			}
+		if (empty($this->config->merchant)) {
+			throw new CredentialsNotSetException('Merchant must be set');
 		}
 
-		// create new payment transaction
-		try {
-			$this->paymentsProtocol->createTransaction(
-				$this->country,
-				$this->price,
-				$this->currency,
-				'Payment',
-				$refId,
-				null,
-				'STANDARD',
-				'PHYSICAL',
-				'ALL',
-				'',
-				$this->email,
-				'',
-				'',
-				$this->language,
-				$this->preAuth
-			);
-			$transId = $this->paymentsProtocol->getTransactionId();
-		} catch (\Exception $ex) {
-			throw new ComgateException($ex->getMessage());
-		}
+		return $this->client->post($url, [
+			'form_params' => $args
+		]);
 
-		// save transaction data
-		try {
-			$this->paymentsDatabase->saveTransaction(
-				$transId,
-				$refId,
-				$this->price,
-				$this->currency,
-				'PENDING'
-			);
-		} catch (\Exception $ex) {
-			throw new ComgateException($ex->getMessage());
-		}
-
-		return new TransactionResponse($transId, $this->paymentsProtocol->getRedirectUrl());
 	}
 
-	public function checkTransactionStatus(): StatusResponse
+	/**
+	 * @param int $refId
+	 * @return TransactionResponse
+	 * @throws ComgateException
+	 * @throws CredentialsNotSetException
+	 */
+	public function transaction(int $refId): TransactionResponse
 	{
-		try {
-			// get transaction status parameters and check them in my configuration
-			$this->paymentsProtocol->checkTransactionStatus($_POST);
+		$this->checkState();
+		$response = $this->request('create', [
+			'merchant' => $this->config->merchant,
+			'test' => ($this->debug ? 'true' : 'false'),
+			'country' => $this->country,
+			'price' => round($this->price * 100),
+			'curr' => $this->currency,
+			'label' => 'Payment',
+			'refId' => $refId,
+			'payerId' => null,
+			'vatPL' => 'STANDARD',
+			'cat' => 'PHYSICAL',
+			'method' => 'ALL',
+			'account' => '',
+			'email' => $this->email,
+			'phone' => '',
+			'name' => '',
+			'lang' => $this->language,
+			'prepareOnly' => 'true',
+			'secret' => $this->config->password,
+			'preauth' => $this->preAuth ? 'true' : 'false',
+			'initRecurring' => 'false',
+			'eetReport' => false,
+			'eetData' => null
+		]);
 
-			// check transaction parameters in my database
-			$this->paymentsDatabase->checkTransaction(
-				$this->paymentsProtocol->getTransactionStatusTransId(),
-				$this->paymentsProtocol->getTransactionStatusRefId(),
-				$this->paymentsProtocol->getTransactionStatusPrice(),
-				$this->paymentsProtocol->getTransactionStatusCurrency()
-			);
+		return new TransactionResponse($response);
+	}
 
-			// save new transaction status to my database
-			$this->paymentsDatabase->saveTransaction(
-				$this->paymentsProtocol->getTransactionStatusTransId(),
-				$this->paymentsProtocol->getTransactionStatusRefId(),
-				$this->paymentsProtocol->getTransactionStatusPrice(),
-				$this->paymentsProtocol->getTransactionStatusCurrency(),
-				$this->paymentsProtocol->getTransactionStatus(),
-				$this->paymentsProtocol->getTransactionFee()
-			);
-			return new StatusResponse($this->paymentsProtocol->getTransactionStatusTransId(), $this->paymentsProtocol->getTransactionStatus());
-		} catch (\Exception $ex) {
-			return new StatusResponse(null, null, $ex);
-		}
+	public function getStatus(): StatusResponse
+	{
+		return new StatusResponse($this->request, $this->config, $this->debug);
 	}
 }

@@ -7,7 +7,6 @@ namespace NAttreid\Comgate\DI;
 use NAttreid\Comgate\ComgateClient;
 use NAttreid\Comgate\Hooks\ComgateConfig;
 use Nette\DI\CompilerExtension;
-use Nette\DI\Helpers;
 
 /**
  * Class AbstractComgateExtension
@@ -18,10 +17,9 @@ abstract class AbstractComgateExtension extends CompilerExtension
 {
 
 	private $defaults = [
-		'paymentsUrl' => 'https://payments.comgate.cz/v1.0/create',
-		'temp' => '%tempDir%/comgate/',
+		'url' => 'https://payments.comgate.cz/v1.0/',
 		'merchant' => null,
-		'test' => false,
+		'debug' => false,
 		'password' => null
 	];
 
@@ -30,17 +28,14 @@ abstract class AbstractComgateExtension extends CompilerExtension
 		$config = $this->validateConfig($this->defaults, $this->getConfig());
 		$builder = $this->getContainerBuilder();
 
-		$config['temp'] = Helpers::expand($config['temp'], $builder->parameters);
-
 		$comgate = $this->prepareConfig($config);
 
 		$builder->addDefinition($this->prefix('client'))
 			->setType(ComgateClient::class)
 			->setArguments([
+				$config['debug'],
 				$comgate,
-				$config['temp'],
-				$config['paymentsUrl'],
-				$config['test'],
+				$config['url'],
 			]);
 	}
 
