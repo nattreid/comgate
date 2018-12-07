@@ -19,15 +19,30 @@ public $comgateClient;
 private function actionProcess(): void {
     $comgateClient = $this->comgateClient;
     
-    $comgateClient->setCountry($this->order->customer->country->code);
-    $comgateClient->setCurrency($this->order->currency->code);
-    $comgateClient->setPrice($this->order->price);
+    $transaction= new \NAttreid\Comgate\Helpers\Transaction;
+    $transaction->refId=$this->order->id;
+    $transaction->country=$this->order->customer->country->code;
+    $transaction->currency=$this->order->currency->code;
+    $transaction->price=$this->order->price;
 
-    $response = $comgateClient->transaction($this->order->id);
+    $response = $comgate->transaction($transaction);
 
     $this->order->setComgateTransactionId($response->transactionId);
 
     $this->sendResponse($response->response);
+}
+
+private function actionRefund(float $price): void {
+    $comgateClient = $this->comgateClient;
+
+    $refund = new \NAttreid\Comgate\Helpers\Refund;
+    $refund->transactionId = $this->order->comgateTransactionId;
+    $refund->price = $price;
+    $refund->currency = $this->order->currency->code;
+
+    $response = $comgateClient->refund($refund);
+
+    return $response->isOk();
 }
 
 public function actionComgateStatus(): void

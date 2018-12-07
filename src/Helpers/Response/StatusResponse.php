@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NAttreid\Comgate\Helpers;
+namespace NAttreid\Comgate\Helpers\Response;
 
 use NAttreid\Comgate\Hooks\ComgateConfig;
 use Nette\Http\Request;

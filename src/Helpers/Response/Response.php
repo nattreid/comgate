@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace NAttreid\Comgate\Helpers;
+namespace NAttreid\Comgate\Helpers\Response;
 
+use NAttreid\Comgate\Helpers\Exceptions\ComgateException;
 use Nette\SmartObject;
 use Psr\Http\Message\ResponseInterface;
 

@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace NAttreid\Comgate;
 
 use GuzzleHttp\Client;
-use NAttreid\Comgate\Helpers\ComgateException;
-use NAttreid\Comgate\Helpers\CredentialsNotSetException;
-use NAttreid\Comgate\Helpers\StatusResponse;
-use NAttreid\Comgate\Helpers\TransactionResponse;
+use NAttreid\Comgate\Helpers\Exceptions\ComgateException;
+use NAttreid\Comgate\Helpers\Exceptions\CredentialsNotSetException;
+use NAttreid\Comgate\Helpers\Refund;
+use NAttreid\Comgate\Helpers\Response\RefundResponse;
+use NAttreid\Comgate\Helpers\Response\StatusResponse;
+use NAttreid\Comgate\Helpers\Response\TransactionResponse;
+use NAttreid\Comgate\Helpers\Transaction;
 use NAttreid\Comgate\Hooks\ComgateConfig;
 use Nette\Http\Request;
 use Psr\Http\Message\ResponseInterface;
@@ -20,20 +23,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 class ComgateClient
 {
-	/** @var string */
-	private $country;
 
-	/** @var float */
-	private $price;
-
-	/** @var string */
-	private $currency;
-
-	/** @var string */
-	private $email;
-
-	/** @var string */
-	private $language;
 
 	/** @var bool */
 	private $preAuth = false;
@@ -58,51 +48,12 @@ class ComgateClient
 		$this->request = $request;
 	}
 
-	public function setCountry(string $country): void
-	{
-		$this->country = $country;
-	}
-
-	public function setPrice(float $price): void
-	{
-		$this->price = $price;
-	}
-
-	public function setCurrency(string $currency): void
-	{
-		$this->currency = $currency;
-	}
-
-	public function setEmail(string $email): void
-	{
-		$this->email = $email;
-	}
-
-	protected function setLanguage(string $language): void
-	{
-		$this->language = $language;
-	}
 
 	public function setPreAuth(bool $preAuth = true): void
 	{
 		$this->preAuth = $preAuth;
 	}
 
-	/**
-	 * @throws ComgateException
-	 */
-	private function checkState(): void
-	{
-		if ($this->country === null) {
-			throw new ComgateException('Country is not set.');
-		}
-		if ($this->currency === null) {
-			throw new ComgateException('Currency is not set.');
-		}
-		if ($this->price === null) {
-			throw new ComgateException('Price is not set.');
-		}
-	}
 
 	/**
 	 * @param string $url
@@ -123,31 +74,43 @@ class ComgateClient
 	}
 
 	/**
-	 * @param int $refId
+	 * @param Transaction $transaction
 	 * @return TransactionResponse
 	 * @throws ComgateException
 	 * @throws CredentialsNotSetException
 	 */
-	public function transaction(int $refId): TransactionResponse
+	public function transaction(Transaction $transaction): TransactionResponse
 	{
-		$this->checkState();
+		if ($transaction->refId === null) {
+			throw new ComgateException('ReferenceId is not set.');
+		}
+		if ($transaction->country === null) {
+			throw new ComgateException('Country is not set.');
+		}
+		if ($transaction->currency === null) {
+			throw new ComgateException('Currency is not set.');
+		}
+		if ($transaction->price === null) {
+			throw new ComgateException('Price is not set.');
+		}
+
 		$response = $this->request('create', [
 			'merchant' => $this->config->merchant,
 			'test' => ($this->debug ? 'true' : 'false'),
-			'country' => $this->country,
-			'price' => round($this->price * 100),
-			'curr' => $this->currency,
+			'country' => $transaction->country,
+			'price' => round($transaction->price * 100),
+			'curr' => $transaction->currency,
 			'label' => 'Payment',
-			'refId' => $refId,
+			'refId' => $transaction->refId,
 			'payerId' => null,
 			'vatPL' => 'STANDARD',
 			'cat' => 'PHYSICAL',
 			'method' => 'ALL',
 			'account' => '',
-			'email' => $this->email,
+			'email' => $transaction->email,
 			'phone' => '',
 			'name' => '',
-			'lang' => $this->language,
+			'lang' => $transaction->language,
 			'prepareOnly' => 'true',
 			'secret' => $this->config->password,
 			'preauth' => $this->preAuth ? 'true' : 'false',
@@ -162,5 +125,29 @@ class ComgateClient
 	public function getStatus(): StatusResponse
 	{
 		return new StatusResponse($this->request, $this->config, $this->debug);
+	}
+
+	public function refund(Refund $refund): RefundResponse
+	{
+		if ($refund->transactionId === null) {
+			throw new ComgateException('TransactionId is not set.');
+		}
+		if ($refund->currency === null) {
+			throw new ComgateException('Currency is not set.');
+		}
+		if ($refund->price === null) {
+			throw new ComgateException('Price is not set.');
+		}
+
+		$response = $this->request('refund', [
+			'merchant' => $this->config->merchant,
+			'transId' => $refund->transactionId,
+			'secret' => $this->config->password,
+			'amount' => round($refund->price * 100),
+			'curr' => $refund->currency,
+			'test' => ($this->debug ? 'true' : 'false')
+		]);
+
+		return new RefundResponse($response);
 	}
 }
