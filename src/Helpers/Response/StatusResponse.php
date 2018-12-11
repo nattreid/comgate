@@ -46,9 +46,9 @@ class StatusResponse
 		) {
 			$this->error = 'Missing parameters';
 		} elseif (
-			$request->getPost('merchant') !== $config->merchant ||
-			$request->getPost('test') !== ($debug ? 'true' : 'false') ||
-			$request->getPost('secret') !== $config->password
+			$request->getPost('merchant') != $config->merchant ||
+			$request->getPost('test') != ($debug ? 'true' : 'false') ||
+			$request->getPost('secret') != $config->password
 		) {
 			$this->error = 'Invalid merchant identification';
 		}
