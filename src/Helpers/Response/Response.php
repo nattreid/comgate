@@ -47,7 +47,7 @@ abstract class Response
 	 * @return string
 	 * @throws ComgateException
 	 */
-	public function getParam(string $param): string
+	protected function getParam(string $param): string
 	{
 		if ($this->params === null) {
 			$this->params = $this->parseResponse();
@@ -57,5 +57,15 @@ abstract class Response
 			throw new ComgateException('Missing response parameter: ' . $param);
 		}
 		return $this->params[$param];
+	}
+
+	public function getCode(): int
+	{
+		return (int) $this->getParam('code');
+	}
+
+	public function getMessage(): string
+	{
+		return $this->getParam('message');
 	}
 }
